@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
   unsigned procsize = strlen(argv[1]);
 
-  char *procpath = malloc(procsize + 7);
+  char procpath[PATH_MAX + 1];
   procpath[procsize + 6] = 0;
 
   memcpy(procpath, "/proc/", 6);
