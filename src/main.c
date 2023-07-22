@@ -5,6 +5,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 int main(int argc, char **argv) {
@@ -47,6 +48,8 @@ int main(int argc, char **argv) {
   char buffer[PATH_MAX + 1];
   buffer[PATH_MAX] = 0;
 
+  pid_t selfpid = getpid();
+
   for(struct dirent *dsrc = readdir(dir); dsrc != 0x0; dsrc = readdir(dir)) {
     if(dsrc->d_type != DT_LNK) continue;
 
@@ -66,7 +69,17 @@ int main(int argc, char **argv) {
 
     buffer[size] = 0;
 
-    printf("fd: %s -> %s %s\n", dsrc->d_name, buffer, (*(int *) dir == atoi(dsrc->d_name) ? "(created by this command)" : ""));
+    printf("fd: %s -> %s ", dsrc->d_name, buffer);
+
+    if(strncmp(buffer, "/proc/", 6) == 0) {
+      buffer[strlen(buffer) - 3] = 0;
+      
+      pid_t pid = atoi(buffer + 6);
+
+      if(pid == selfpid) printf("(created by this command)");
+    }
+
+    printf("\n");
 
     free(dsrc);
   }
